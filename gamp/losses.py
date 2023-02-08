@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.linalg import norm
 
 
 def MSE(X, y, B_hat):
@@ -15,7 +16,7 @@ def MSE(X, y, B_hat):
     return np.mean(np.min(np.square(y_hat - y), axis=1))
 
 
-def beta_loss(B_hat, B):
+def B_loss(B_hat, B):
     """
         Find the sum of the mean squared error between the true regression slopes and their estimates.
         Note that B_hat may have permuted columns compared to B.
@@ -35,3 +36,10 @@ def beta_loss(B_hat, B):
         mse = np.delete(mse, i, 0)
         mse = np.delete(mse, j, 1)
     return total / J
+
+
+def beta_loss(beta, beta_hat):
+    """
+    MSE between signal and estimate normalised by the dimension
+    """
+    return norm(beta - beta_hat) ** 2 / beta.shape[0]

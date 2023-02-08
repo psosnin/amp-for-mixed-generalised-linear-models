@@ -32,7 +32,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma, alpha, n_iters, gk_expect):
                            [np.zeros((L, L)), B_row_cov]]) / n
 
     # begin AMP iterations
-    for _ in tqdm(range(n_iters)):
+    for _ in tqdm(range(n_iters), disable=True):
         # print(Sigma_k)
         S_1, S_2 = np.hsplit(Sigma_k, 2)
         S_11, S_21 = np.vsplit(S_1, 2)
