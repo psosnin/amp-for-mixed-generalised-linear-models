@@ -3,9 +3,9 @@ from tqdm import tqdm
 from numpy.linalg import inv, pinv
 
 
-def GAMP(X, Y, B_hat_k, B_row_cov, sigma, alpha, n_iters, gk_expect):
+def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma, alpha, n_iters, gk_expect):
     """
-    Run GAMP to estimate B from X and Y.
+    Run matrix generalised approximate message passing to estimate B from X and Y.
     Parameters:
         X: n x p = samples
         Y: n x 1 = observations

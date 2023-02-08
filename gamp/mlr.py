@@ -3,7 +3,7 @@ from numpy.random import default_rng
 from numpy.linalg import pinv, norm
 from scipy.stats import multivariate_normal
 
-from .gamp import GAMP
+from .matrix_gamp import matrix_GAMP
 
 RNG = default_rng(1)
 
@@ -65,5 +65,5 @@ def run_MLR_trial(p, L, n, alpha, sigma, n_iters):
     Y = np.take_along_axis(Theta, c[:, None], axis=1)
     Y = Y + RNG.normal(0, sigma, n)[:, None]
 
-    B_hat_list, M_k_B_list = GAMP(X, Y, B_hat_0, B_row_cov, sigma, alpha, n_iters, gk_expect_mlr)
+    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma, alpha, n_iters, gk_expect_mlr)
     return B, B_hat_list, M_k_B_list

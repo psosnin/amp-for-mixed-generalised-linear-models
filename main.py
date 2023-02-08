@@ -2,8 +2,8 @@ import numpy as np
 from numpy.random import default_rng
 import matplotlib.pyplot as plt
 
-from matrix_gamp.mlr import run_MLR_trial
-from matrix_gamp.losses import beta_loss, state_evolution_mse
+from gamp.mlr import run_MLR_trial
+from gamp.losses import beta_loss
 
 RNG = default_rng(1)
 
@@ -18,11 +18,9 @@ n_iters = 15  # number of AMP iterations
 
 B, B_hat_list, M_k_B_list = run_MLR_trial(p, L, n, alpha, sigma, n_iters)
 true_losses = [beta_loss(B, B_hat) for B_hat in B_hat_list]
-se_losses = [state_evolution_mse(M_k_B) for M_k_B in M_k_B_list]
 x = np.arange(0, len(B_hat_list))
 print(true_losses[-1])
 plt.plot(x, true_losses, label='signal mse')
-plt.plot(x[1:], se_losses, label='state evolution')
 plt.ylim(0, np.max(true_losses)*1.1)
 plt.xlabel('Iteration No.')
 plt.ylabel('Mean Squared Error')
