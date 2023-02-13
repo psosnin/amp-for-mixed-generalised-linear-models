@@ -2,6 +2,7 @@ import numpy as np
 from numpy.random import default_rng
 import matplotlib.pyplot as plt
 
+import context
 from gamp.mlr import run_MLR_trial
 from gamp.losses import B_loss
 
