@@ -43,3 +43,10 @@ def beta_loss(beta, beta_hat):
     MSE between signal and estimate normalised by the dimension
     """
     return norm(beta - beta_hat) ** 2 / beta.shape[0]
+
+
+def norm_sq_corr(beta, beta_hat):
+    """
+    Calculate the normalised squared correlation between beta and beta_hat.
+    """
+    return (np.dot(beta, beta_hat) / (norm(beta) * norm(beta_hat))) ** 2
