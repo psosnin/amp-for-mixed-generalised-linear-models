@@ -1,22 +1,19 @@
 from math import sqrt
 
 import numpy as np
+import matplotlib.pyplot as plt
 from numpy.random import default_rng
 from numpy.linalg import inv
 from scipy.stats import norm as normal
 
+from .linear import gk_expect_linear
 from .gamp import GAMP
 
 RNG = default_rng(1)
 
 
-def compute_P_Y_given_Z_k_omega(Y, Z_k, omega, Sigma, sigma_sq):
-    mu_1 = Z_k * Sigma[0, 1] / Sigma[1, 1]
-    sigma_1_sq = Sigma[0, 0] - Sigma[0, 1] ** 2 / Sigma[1, 1]
-
-    mu_2 = (Y * sigma_1_sq + mu_1 * sigma_sq) / (sigma_sq + sigma_1_sq)
-    sigma_2_sq = sigma_sq * sigma_1_sq / (sigma_sq + sigma_1_sq)
-
+def compute_P_Y_given_Z_k_omega(Y, Z_k, omega, sigma_sq, mu_1, sigma_1_sq, mu_2, sigma_2_sq):
+    """ Compute p(Y | Z_k, omega) """
     if omega == 0:
         return normal.pdf(Y, 0, sqrt(sigma_sq))
     elif omega == 1:
@@ -34,15 +31,13 @@ def compute_P_omega_given_Z_k(omega, Z_k, mu_1, sigma_1_sq):
         return 1 - normal.cdf(0, mu_1, sqrt(sigma_1_sq))
 
 
-def compute_P_omega_given_Z_k_Y(omega, Z_k, Y, Sigma, sigma_sq):
-    mu_1 = Z_k * Sigma[0, 1] / Sigma[1, 1]
-    sigma_1_sq = Sigma[0, 0] - Sigma[0, 1] ** 2 / Sigma[1, 1]
+def compute_P_omega_given_Z_k_Y(omega, Z_k, Y, sigma_sq, mu_1, sigma_1_sq, mu_2, sigma_2_sq):
 
     P_omega_0_given_Z_k = compute_P_omega_given_Z_k(0, Z_k, mu_1, sigma_1_sq)
     P_omega_1_given_Z_k = 1 - P_omega_0_given_Z_k
 
-    P_Y_given_Z_k_omega_1 = compute_P_Y_given_Z_k_omega(Y, Z_k, 1, Sigma, sigma_sq)
-    P_Y_given_Z_k_omega_0 = compute_P_Y_given_Z_k_omega(Y, Z_k, 0, Sigma, sigma_sq)
+    P_Y_given_Z_k_omega_1 = compute_P_Y_given_Z_k_omega(Y, Z_k, 1, sigma_sq, mu_1, sigma_1_sq, mu_2, sigma_2_sq)
+    P_Y_given_Z_k_omega_0 = compute_P_Y_given_Z_k_omega(Y, Z_k, 0, sigma_sq, mu_1, sigma_1_sq, mu_2, sigma_2_sq)
 
     P_omega_0_given_Z_k_Y = P_omega_0_given_Z_k * P_Y_given_Z_k_omega_0 / \
         (P_omega_0_given_Z_k * P_Y_given_Z_k_omega_0 + P_omega_1_given_Z_k * P_Y_given_Z_k_omega_1)
@@ -63,7 +58,7 @@ def gk_expect_relu(Z_k_and_Y, Sigma_k, sigma_sq):
     sigma_2_sq = sigma_sq * sigma_1_sq / (sigma_sq + sigma_1_sq)
     sigma_2 = sqrt(sigma_2_sq)
 
-    P_omega_0_given_Z_k_Y = compute_P_omega_given_Z_k_Y(0, Z_k, Y, Sigma_k, sigma_sq)
+    P_omega_0_given_Z_k_Y = compute_P_omega_given_Z_k_Y(0, Z_k, Y, sigma_sq, mu_1, sigma_1_sq, mu_2, sigma_2_sq)
     P_omega_1_given_Z_k_Y = 1 - P_omega_0_given_Z_k_Y
 
     E_Z_given_Z_k_Y_omega_0 = mu_1 - sigma_1_sq * normal.pdf(0, mu_1, sigma_1) / normal.cdf(0, mu_1, sigma_1)
@@ -91,4 +86,32 @@ def run_relu_trial(p, n, sigma_sq, sigma_beta_sq, n_iters):
     y = np.clip(X @ beta, 0, np.inf) + eps
     beta_hat_k = RNG.normal(0, sqrt(sigma_beta_sq), p)
     beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect_relu)
+    return beta, beta_hat_list, mu_k_list
+
+
+def run_relu_threshold_trial(p, n, sigma_sq, sigma_beta_sq, n_iters, beta=None):
+    """
+    Generate a rectified linear regression dataset and then perform GAMP.
+    Parameters:
+        p: int = number of dimensions
+        n: int = number of samples
+        sigma_sq: float = noise variance
+        sigma_beta_sq: float = signal variance
+        n_iters: int = max number of AMP iterations to perform
+    Returns:
+        beta = true signal
+        beta_hat_list = list of beta_hat estimates for each AMP iteration
+        mu_k_list = list of state evolution mean for each AMP iteration
+    """
+    X = RNG.normal(0, sqrt(1 / n), (n, p))
+    eps = RNG.normal(0, sqrt(sigma_sq), n)
+    if beta is None:
+        beta = RNG.normal(0, sqrt(sigma_beta_sq), p)
+    y = np.clip(X @ beta, 0, np.inf) + eps
+    # discard half the data (about half has been rectified)
+    thresh = np.median(y)
+    X = X[y > thresh, :]
+    y = y[y > thresh]
+    beta_hat_k = RNG.normal(0, sqrt(sigma_beta_sq), p)
+    beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect_linear)
     return beta, beta_hat_list, mu_k_list
