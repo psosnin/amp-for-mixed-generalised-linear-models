@@ -32,7 +32,7 @@ def gk_expect_mlr(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma, alpha):
     return E_Z_given_Zk_Ybar_cbar @ P_cbar_given_Zk_Ybar.T
 
 
-def run_MLR_trial(p, L, n, alpha, sigma, n_iters):
+def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma, n_iters):
     """
     Generate a random mixed linear regression dataset and then perform GAMP.
     Parameters:
@@ -40,6 +40,7 @@ def run_MLR_trial(p, L, n, alpha, sigma, n_iters):
         L: int = number of mixture components
         n: int = number of samples
         alpha: L x 1 = categorical distribution on components
+        B_row_cov: L x L = covariance matrix of the rows of B
         sigma: int = noise level
         n_iters: int = max number of AMP iterations to perform
     Returns:
@@ -49,10 +50,8 @@ def run_MLR_trial(p, L, n, alpha, sigma, n_iters):
 
     # initialise B signal matrix
     # rows of B are generated iid from joint Gaussian
-    B_row_mean = np.zeros(L)
-    B_row_cov = np.eye(L)
-    B = RNG.multivariate_normal(B_row_mean, B_row_cov, p)
-    B_hat_0 = RNG.multivariate_normal(B_row_mean, B_row_cov, p)
+    B = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
+    B_hat_0 = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
     # initial estimate of B is generated from the same distribution
 
     # generate X iid Gaussian from N(0, 1/N)
