@@ -7,10 +7,8 @@ from scipy.stats import multivariate_normal
 
 from .matrix_gamp import matrix_GAMP
 
-RNG = default_rng()
 
-
-def gk_expect_mlr(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma_sq, alpha):
+def gk_expect_mixed_linear(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma_sq, alpha):
     """ Compute E[Z|Zk, Ybar] for the mixed linear regression model. """
     E_Z_given_Zk_Ybar_cbar = np.zeros((L, L))
     P_Zk_Ybar_given_cbar = np.zeros((L))
@@ -30,11 +28,15 @@ def gk_expect_mlr(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma_sq, alpha):
             print("Terminating, cov matrix not psd:\n", S_a)
             return np.full([L], np.nan)
     P_cbar_given_Zk_Ybar = alpha * P_Zk_Ybar_given_cbar
-    P_cbar_given_Zk_Ybar = P_cbar_given_Zk_Ybar / norm(P_cbar_given_Zk_Ybar, 1)
+    if norm(P_cbar_given_Zk_Ybar, 1) == 0.0:
+        # if P_cbar_given_Zk_Ybar is all zeros, then S_a is singular so return a uniform pdf
+        P_cbar_given_Zk_Ybar = np.ones(L) / L
+    else:
+        P_cbar_given_Zk_Ybar = P_cbar_given_Zk_Ybar / norm(P_cbar_given_Zk_Ybar, 1)
     return E_Z_given_Zk_Ybar_cbar @ P_cbar_given_Zk_Ybar.T
 
 
-def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters):
+def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters, RNG=None):
     """
     Generate a random mixed linear regression dataset and then perform GAMP.
     Parameters:
@@ -49,7 +51,8 @@ def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters):
         B = true signal matrix
         B_hat_list = list of B_hat estimates for each AMP iteration
     """
-
+    if RNG is None:
+        RNG = default_rng()
     # initialise B signal matrix
     # rows of B are generated iid from joint Gaussian
     B = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
@@ -66,5 +69,5 @@ def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters):
     Y = np.take_along_axis(Theta, c[:, None], axis=1)
     Y = Y + RNG.normal(0, sqrt(sigma_sq), n)[:, None]
 
-    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, gk_expect_mlr)
+    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, gk_expect_mixed_linear)
     return B, B_hat_list, M_k_B_list

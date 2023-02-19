@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.linalg import inv
+from numpy.linalg import pinv
 
 
 def state_evolution_mse(mu_k, sigma_k_sq, sigma_beta_sq):
@@ -15,7 +15,7 @@ def state_evolution_corr(mu_k, sigma_k_sq, sigma_beta_sq):
 
 def state_evolution_mse_mixed(M_k, Sigma_B):
     L = M_k.shape[0]
-    Q = Sigma_B @ M_k.T @ inv(M_k @ Sigma_B @ M_k.T + M_k.T)
+    Q = Sigma_B @ M_k.T @ pinv(M_k @ Sigma_B @ M_k.T + M_k.T)
     se = []
     for i in range(L):
         se.append(Sigma_B[i, i] - Q[i, :] @ M_k @ Sigma_B[i, :])
