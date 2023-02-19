@@ -3,7 +3,7 @@ from tqdm import tqdm
 from numpy.linalg import inv, pinv
 
 
-def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma, alpha, n_iters, gk_expect):
+def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, gk_expect):
     """
     Run matrix generalised approximate message passing to estimate B from X and Y.
     Parameters:
@@ -11,7 +11,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma, alpha, n_iters, gk_expect):
         Y: n x 1 = observations
         B_hat_k: p x L = initial estimate of signal matrix
         B_row_cov: L x L = covariance of distribution of the rows of B
-        sigma: int = noise standard deviation
+        sigma: int = noise variance
         alpha: L x 1 = categorical distribution on components
         n_iters: int = max number of AMP iterations to perform
         gk_expect: function to compute E[Z | Zk, Ybar], depends on choice of GLM
@@ -40,7 +40,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma, alpha, n_iters, gk_expect):
         # step 1:
         Theta_k = X @ B_hat_k - R_hat_minus_1 @ F_k.T
         # step 2:
-        R_hat_k = apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma, alpha, gk_expect)
+        R_hat_k = apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha, gk_expect)
         if np.isnan(R_hat_k).any():
             print(f"nan in R_hat_k at iteration {_}, stopping.")
             break
@@ -88,16 +88,16 @@ def update_Sigmak(B_hat_k, B_cov, p, n):
     return p * tmp / n
 
 
-def compute_gk_1d(Z_k_Ybar, S_11, S_12, S_21, S_22, cov_Z_given_Zk, L, sigma, alpha, gk_expect):
+def compute_gk_1d(Z_k_Ybar, S_11, S_12, S_21, S_22, cov_Z_given_Zk, L, sigma_sq, alpha, gk_expect):
     """ Compute the Bayesian-Optimal g_k* """
     E_Z_given_Zk = S_12 @ pinv(S_22) @ Z_k_Ybar[0:L]
-    E_Z_given_Zk_Ybar = gk_expect(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma, alpha)
+    E_Z_given_Zk_Ybar = gk_expect(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma_sq, alpha)
     g_Zk_Ybar = inv(cov_Z_given_Zk) @ (E_Z_given_Zk_Ybar - E_Z_given_Zk)
     return g_Zk_Ybar
 
 
-def apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma, alpha, gk_expect):
+def apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha, gk_expect):
     """ Apply Bayesian-Optimal g_k* to each row of Theta_k """
     cov_Z_given_Zk = S_11 - S_12 @ pinv(S_22) @ S_21
     Theta_k_Ybar = np.hstack((Theta_k, Y))
-    return np.apply_along_axis(compute_gk_1d, 1, Theta_k_Ybar, S_11, S_12, S_21, S_22, cov_Z_given_Zk, L, sigma, alpha, gk_expect)
+    return np.apply_along_axis(compute_gk_1d, 1, Theta_k_Ybar, S_11, S_12, S_21, S_22, cov_Z_given_Zk, L, sigma_sq, alpha, gk_expect)

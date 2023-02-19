@@ -1,3 +1,5 @@
+from math import sqrt
+
 import numpy as np
 from numpy.random import default_rng
 from numpy.linalg import pinv, norm
@@ -5,10 +7,10 @@ from scipy.stats import multivariate_normal
 
 from .matrix_gamp import matrix_GAMP
 
-RNG = default_rng(1)
+RNG = default_rng()
 
 
-def gk_expect_mlr(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma, alpha):
+def gk_expect_mlr(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma_sq, alpha):
     """ Compute E[Z|Zk, Ybar] for the mixed linear regression model. """
     E_Z_given_Zk_Ybar_cbar = np.zeros((L, L))
     P_Zk_Ybar_given_cbar = np.zeros((L))
@@ -18,7 +20,7 @@ def gk_expect_mlr(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma, alpha):
         # Covariance of the distribution Zk, Ybar given cbar
         S_a = np.block([
             [S_22, S_21[:, i][:, None]],
-            [S_12[i, :][:, None].T, S_11[i, i] + sigma**2],
+            [S_12[i, :][:, None].T, S_11[i, i] + sigma_sq],
         ])
         E_Z_given_Zk_Ybar_cbar[:, i] = S_ba @ pinv(S_a) @ Z_k_Ybar
         try:
@@ -32,7 +34,7 @@ def gk_expect_mlr(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma, alpha):
     return E_Z_given_Zk_Ybar_cbar @ P_cbar_given_Zk_Ybar.T
 
 
-def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma, n_iters):
+def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters):
     """
     Generate a random mixed linear regression dataset and then perform GAMP.
     Parameters:
@@ -62,7 +64,7 @@ def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma, n_iters):
 
     # generate Y by picking elements from Theta according to c
     Y = np.take_along_axis(Theta, c[:, None], axis=1)
-    Y = Y + RNG.normal(0, sigma, n)[:, None]
+    Y = Y + RNG.normal(0, sqrt(sigma_sq), n)[:, None]
 
-    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma, alpha, n_iters, gk_expect_mlr)
+    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, gk_expect_mlr)
     return B, B_hat_list, M_k_B_list
