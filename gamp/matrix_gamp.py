@@ -33,7 +33,6 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk):
 
     # begin AMP iterations
     for _ in tqdm(range(n_iters), disable=True):
-        print(_)
         # print(Sigma_k)
         S_1, S_2 = np.hsplit(Sigma_k, 2)
         S_11, S_21 = np.vsplit(S_1, 2)
@@ -87,4 +86,3 @@ def update_Sigmak(B_hat_k, B_cov, p, n):
     tmp = np.block([[B_cov, B_hat_cov],
                     [B_hat_cov, B_hat_cov]])
     return p * tmp / n
-
