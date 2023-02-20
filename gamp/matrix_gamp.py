@@ -3,7 +3,7 @@ from tqdm import tqdm
 from numpy.linalg import inv, pinv
 
 
-def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, gk_expect):
+def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk):
     """
     Run matrix generalised approximate message passing to estimate B from X and Y.
     Parameters:
@@ -33,6 +33,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, gk_expect):
 
     # begin AMP iterations
     for _ in tqdm(range(n_iters), disable=True):
+        print(_)
         # print(Sigma_k)
         S_1, S_2 = np.hsplit(Sigma_k, 2)
         S_11, S_21 = np.vsplit(S_1, 2)
@@ -40,7 +41,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, gk_expect):
         # step 1:
         Theta_k = X @ B_hat_k - R_hat_minus_1 @ F_k.T
         # step 2:
-        R_hat_k = apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha, gk_expect)
+        R_hat_k = apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha)
         if np.isnan(R_hat_k).any():
             print(f"nan in R_hat_k at iteration {_}, stopping.")
             break
@@ -87,17 +88,3 @@ def update_Sigmak(B_hat_k, B_cov, p, n):
                     [B_hat_cov, B_hat_cov]])
     return p * tmp / n
 
-
-def compute_gk_1d(Z_k_Ybar, S_11, S_12, S_21, S_22, cov_Z_given_Zk, L, sigma_sq, alpha, gk_expect):
-    """ Compute the Bayesian-Optimal g_k* """
-    E_Z_given_Zk = S_12 @ pinv(S_22) @ Z_k_Ybar[0:L]
-    E_Z_given_Zk_Ybar = gk_expect(Z_k_Ybar, S_11, S_12, S_21, S_22, L, sigma_sq, alpha)
-    g_Zk_Ybar = inv(cov_Z_given_Zk) @ (E_Z_given_Zk_Ybar - E_Z_given_Zk)
-    return g_Zk_Ybar
-
-
-def apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha, gk_expect):
-    """ Apply Bayesian-Optimal g_k* to each row of Theta_k """
-    cov_Z_given_Zk = S_11 - S_12 @ pinv(S_22) @ S_21
-    Theta_k_Ybar = np.hstack((Theta_k, Y))
-    return np.apply_along_axis(compute_gk_1d, 1, Theta_k_Ybar, S_11, S_12, S_21, S_22, cov_Z_given_Zk, L, sigma_sq, alpha, gk_expect)
