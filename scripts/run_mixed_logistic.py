@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 import context
-from gamp.mixed_logistic import run_mixed_logistic_trial
+from gamp.mixed_logistic_vect import run_mixed_logistic_trial
 from gamp.losses import B_loss, prediction_error_mixed
 from gamp.state_evolution import state_evolution_mse_mixed
 
@@ -19,8 +19,8 @@ RNG = default_rng(seed)
 # Set parameters ===========================================
 p = 200  # number of dimensions
 L = 3  # number of mixture components
-n = 5000  # number of samples
-sigma_beta_sq = 500  # signal variance
+n = 2000  # number of samples
+sigma_beta_sq = 100  # signal variance
 n_iters = 5  # number of AMP iterations
 n_trials = 1  # number of amp trials to perform
 
@@ -75,10 +75,10 @@ for i in range(L):
     axs[i].legend()
 
 f.suptitle(
-    f"AMP for Mixed Logistic Regression\n$L={L}, p={p}, n={n}, \ \sigma_\\beta^2={sigma_beta_sq}$\n$")
+    f"AMP for Mixed Logistic Regression\n$L={L}, p={p}, n={n}, \ \sigma_\\beta^2={sigma_beta_sq}$")
 plt.xlabel("Iteration No.")
 plt.legend()
-plt.show()
+# plt.show()
 
 plt.figure(figsize=(6, 6))
 
@@ -92,4 +92,4 @@ plt.ylabel('Prediction error')
 plt.xlabel('Iteration No.')
 plt.ylim(0, 1)
 plt.legend()
-plt.show()
+# plt.show()

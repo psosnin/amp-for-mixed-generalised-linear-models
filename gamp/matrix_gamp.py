@@ -21,6 +21,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk):
     """
     n, p = X.shape
     L = B_hat_k.shape[1]
+    assert (Y.shape == (n, 1))
     B_hat_list = [B_hat_k.copy()]
     M_k_B_list = []
     # initialise R_hat_minus_1, F_0, Sigma_0

@@ -23,6 +23,7 @@ def apply_gk_mixed_logistic(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alp
     Theta_k_Ybar = np.hstack((Theta_k, Y))
     return np.apply_along_axis(compute_gk_1d, 1, Theta_k_Ybar, S_11, S_12, S_21, S_22, cov_Z_given_Zk, L, sigma_sq, alpha)
 
+
 def compute_P_c_given_Zk_Y(Y, alpha, mu_zzk, Sigma_zzk):
     result = np.zeros_like(alpha)
     for i, a in enumerate(alpha):
@@ -76,7 +77,8 @@ def compute_E_Z_given_Zk_Y(Zk, Y, Sigma_k, alpha):
     E_Z_given_Zk_Y = np.zeros_like(alpha)
     P_c_given_Zk_Y = compute_P_c_given_Zk_Y(Y, alpha, mu_zzk, Sigma_zzk)
     for j in range(L):
-        E_Z_given_Y_Zk_c = np.array([compute_E_Zi_given_Y_Zk_c(i, Y, Zk, j, Sigma_k, alpha, mu_zzk, Sigma_zzk) for i in range(L)])
+        E_Z_given_Y_Zk_c = np.array([compute_E_Zi_given_Y_Zk_c(
+            i, Y, Zk, j, Sigma_k, alpha, mu_zzk, Sigma_zzk) for i in range(L)])
         E_Z_given_Zk_Y += E_Z_given_Y_Zk_c * P_c_given_Zk_Y[j]
     return E_Z_given_Zk_Y
 
@@ -115,7 +117,7 @@ def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None):
 
     # generate Y by picking elements from Theta according to c
     Y = np.take_along_axis(Theta, c[:, None], axis=1)
-    u = RNG.uniform(0, 1, n)
+    u = RNG.uniform(0, 1, (n, 1))
     Y = np.array(sigmoid(Y) > u, dtype=int)
 
     B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, 0, alpha, n_iters, apply_gk_mixed_logistic)
