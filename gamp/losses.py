@@ -1,5 +1,8 @@
+from math import sqrt
+
 import numpy as np
 from numpy.linalg import norm
+from .logistic import sigmoid
 
 
 def MSE(X, y, B_hat):
@@ -53,3 +56,17 @@ def norm_sq_corr(beta, beta_hat):
     Calculate the normalised squared correlation between beta and beta_hat.
     """
     return (np.dot(beta, beta_hat) / (norm(beta) * norm(beta_hat))) ** 2
+
+def prediction_error(beta, beta_hat, n, RNG):
+    p = beta.size
+    X = RNG.normal(0, sqrt(1 / n), (5*n, p))
+    # data
+    u = RNG.uniform(0, 1, 5*n)
+    y = np.array(sigmoid(X @ beta) > u, dtype=int)
+
+    # predictions:
+    y_pred_hat = np.array(sigmoid(X @ beta_hat) > 0.5, dtype=int)
+    return (5*n - np.sum(y_pred_hat == y)) / (5*n)
+
+def prediction_error_mixed(B, B_hat, n, RNG):
+    return np.array([prediction_error(B[:, j], B_hat[:, j], n, RNG) for j in range(B.shape[1])])
