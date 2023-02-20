@@ -8,25 +8,26 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 import context
-from gamp.mixed_linear import run_MLR_trial
+from gamp.mixed_linear_vect import run_MLR_trial
 from gamp.losses import B_loss
 from gamp.state_evolution import state_evolution_mse_mixed
 
 seed = randint(0, 10000)
 # seed = 4347
+# seed = 6227
 print("seed = ", seed)
 RNG = default_rng(seed)
 
 # Set parameters ===========================================
 p = 200  # number of dimensions
 L = 3  # number of mixture components
-n = 6000  # number of samples
-sigma_sq = 0.01  # noise variance
+n = 2000  # number of samples
+sigma_sq = 0.001  # noise variance
 sigma_beta_sq = 1  # signal variance
 n_iters = 10  # number of AMP iterations
-n_trials = 1  # number of amp trials to perform
+n_trials = 15  # number of amp trials to perform
 
-alpha = RNG.uniform(0.5, 1, L)
+alpha = RNG.uniform(0.2, 1, L)
 alpha = alpha / np.linalg.norm(alpha, 1)  # unequal mixing
 # alpha = np.ones(L) / L  # equal mixing
 
@@ -34,7 +35,7 @@ B_cov = RNG.uniform(-0.8, 0.8, (L, L))
 B_cov = B_cov @ B_cov.T
 B_diag = np.ones(L) * sigma_beta_sq + RNG.uniform(0, 0.3, L)
 np.fill_diagonal(B_cov, B_diag)  # unequal variance dependent case
-B_cov = np.diag(B_diag)  # equal variance independent case
+# B_cov = np.diag(B_diag)  # equal variance independent case
 # B_cov = np.eye(L) * sigma_beta_sq  # equal variance independent case
 
 print(f"Sigma_B = \n{B_cov}")
@@ -59,20 +60,24 @@ mse_se_mean = np.mean(mse_se, axis=0)
 mse_mean = np.mean(mse, axis=0)
 mse_std = np.std(mse, axis=0)
 
-plt.figure(figsize=(6, 6))
+f, axs = plt.subplots(L, 1, sharex=True, sharey=True, figsize=(6, 6))
 
 colors = ['red', 'green', 'blue', 'orange', 'pink', 'black', 'purple']
 for i in range(L):
     for j in range(n_trials):
-        plt.plot(range(n_iters + 1), mse[j, :, i], color=colors[i], alpha=0.7)
+        axs[i].plot(range(n_iters + 1), mse[j, :, i], color=colors[i], alpha=0.3)
     # plt.errorbar(range(n_iters + 1), mse_mean[:, i], yerr=2*mse_std[:, i], color=colors[i],
     #              alpha=0.7, elinewidth=2, capsize=5, label=f"mean squared error $\pm 2 \sigma_e$, l={i}, $\\alpha_i$={alpha[i]:.2f}")
-    plt.plot(range(n_iters + 1), mse_se_mean[:, i], color=colors[i], linestyle='dashed', label=f"state evolution, l={i}")
+    axs[i].plot(range(n_iters + 1), mse_se_mean[:, i], color=colors[i], marker='o',
+                linestyle='dashed', label=f"state evolution")
+    axs[i].set_title(f"Mixture {i+1}, $\\alpha$={alpha[i]:.3f}, $\\sigma_\\beta^2$={B_cov[i, i]:.3f}")
+    axs[i].set_ylim(0, 2.5 * np.max(B_cov))
+    axs[i].set_ylabel("Signal MSE")
+    axs[i].legend()
 
-plt.title(f"AMP for Mixed Linear Regression\n$L={L}, p={p}, n={n}, \ \sigma^2={sigma_sq}, \ \sigma_\\beta^2={sigma_beta_sq}$\n$\\alpha = {np.round(alpha, 2)}$")
-plt.ylabel("Signal mean squared error")
-plt.ylim(0, 2.5 * np.max(B_cov))
+f.suptitle(
+    f"AMP for Mixed Linear Regression\n"
+    + f"$L={L}, p={p}, n={n}, \ \sigma^2={sigma_sq}, \ \sigma_\\beta^2={sigma_beta_sq}$")
+
 plt.xlabel("Iteration No.")
-plt.legend()
 plt.show()
-
