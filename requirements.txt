@@ -5,3 +5,4 @@ seaborn
 jupyter
 tqdm
 scikit-learn
+jax[cpu]

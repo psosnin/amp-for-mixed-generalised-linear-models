@@ -7,13 +7,13 @@ from gamp.losses import beta_loss
 from gamp.state_evolution import state_evolution_mse
 
 # Set parameters ==============================
-sigma_sq = 0.1  # noise variance
+sigma_sq = 0  # noise variance
 p = 500  # dimension
-n = 1000  # number of samples
+n = 5000  # number of samples
 delta = n / p
-sigma_beta_sq = 1  # signal variance
+sigma_beta_sq = 20  # signal variance
 n_iters = 5  # number of amp iterations
-n_trials = 15  # number of trials to run
+n_trials = 1  # number of trials to run
 
 mse = np.zeros((n_trials, n_iters + 1))
 mse_se = np.zeros((n_trials, n_iters + 1))
@@ -26,7 +26,6 @@ for i in range(n_trials):
 
 mse_mean = np.mean(mse, axis=0)
 mse_std = np.std(mse, axis=0)
-
 plt.figure(figsize=(6, 6))
 plt.errorbar(range(n_iters + 1), mse_mean, yerr=2*mse_std, color='blue', ecolor='blue',
              alpha=0.7, elinewidth=2, capsize=5, label='mean squared error $\pm 2 \sigma_{MSE}$')
