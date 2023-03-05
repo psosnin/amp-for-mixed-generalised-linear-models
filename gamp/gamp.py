@@ -22,6 +22,7 @@ def GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect):
         beta_hat_list: list of estimates of B for each AMP iteration
         mu_k_list: list of state evolution mean for each iteration
     """
+    # validate input
     n, p = X.shape
     delta = n / p
 

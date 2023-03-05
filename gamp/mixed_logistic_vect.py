@@ -4,6 +4,7 @@ import numpy as np
 from numpy.random import default_rng
 from numpy.linalg import pinv, norm, inv
 from scipy.stats import norm as normal
+import matplotlib.pyplot as plt
 
 from .matrix_gamp import matrix_GAMP
 
@@ -134,7 +135,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None):
+def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None, return_data=False):
     """
     Generate a random mixed logistic regression dataset and then perform GAMP.
     Parameters:
@@ -144,9 +145,12 @@ def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None):
         alpha: L x 1 = categorical distribution on components
         B_row_cov: L x L = covariance matrix of the rows of B
         n_iters: int = max number of AMP iterations to perform
+        RNG: numpy random number generator to use. If none is provided, use random seed
+        return_data: bool = whether to return X and Y
     Returns:
         B = true signal matrix
         B_hat_list = list of B_hat estimates for each AMP iteration
+        M_k_B_list = list of state evolution estimates for each AMP iteration
     """
     if RNG is None:
         RNG = default_rng()
@@ -164,8 +168,12 @@ def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None):
 
     # generate Y by picking elements from Theta according to c
     Y = np.take_along_axis(Theta, c[:, None], axis=1)
+    # plt.hist(sigmoid(Y), bins=10)
+    # plt.show()
     u = RNG.uniform(0, 1, (n, 1))
     Y = np.array(sigmoid(Y) > u, dtype=int)
 
     B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, 0, alpha, n_iters, apply_gk_mixed_logistic)
+    if return_data:
+        return B, B_hat_list, M_k_B_list, X, Y, B_hat_0
     return B, B_hat_list, M_k_B_list
