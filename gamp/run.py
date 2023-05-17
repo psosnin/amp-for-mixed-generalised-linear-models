@@ -41,7 +41,7 @@ def run_trial(model, algorithm, p, n, sigma_sq, sigma_beta_sq, n_iters):
     return beta, beta_hat_list, mu_k_list
 
 
-def run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov,  sigma_sq, n_iters):
+def run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov, sigma_sq, n_iters, spectral=False):
     """
     Run a single trial with the specified mixed glm and algorithm.
     Parameters:
@@ -54,13 +54,14 @@ def run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov,  sigma_sq, n_it
         B_row_cov: np.array = covariance matrix of the rows of B
         sigma_sq: float = noise variance
         n_iters: int = max number of iterations to perform
+        spectral: bool = whether to use spectral initialization
     Returns:
         B: np.array = true signal
         B_hat_list: list of np.array = list of estimated signals
         M_k_list: list of np.array = list of state evolution mu_k
     """
     if model == 'linear' and algorithm == 'GAMP':
-        X, Y, B, B_hat_0 = generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq)
+        X, Y, B, B_hat_0 = generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, spectral)
         B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_linear.apply_gk)
     elif model == 'logistic' and algorithm == 'GAMP':
         X, Y, B, B_hat_0 = generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, sigma_sq)

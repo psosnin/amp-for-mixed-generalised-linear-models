@@ -86,7 +86,30 @@ def generate_data_relu(p, n, sigma_sq, sigma_beta_sq, RNG=default_rng()):
     return X, y, beta, beta_hat_k
 
 
-def generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, RNG=default_rng()):
+def spectral_initialisation(X, Y, L, RNG=default_rng()):
+    """
+    Returns an estimate of the regression slopes based on the top-L subspace of the weighted covariance matrix.
+    Parameters:
+        X: n x p = samples
+        Y: n x 1 = observations
+        L: int = number of components
+        RNG: numpy random number generator
+    Returns:
+        B_hat: p x L matrix, estimate of B
+    """
+    p = X.shape[1]
+    n = X.shape[0]
+    wX = X*Y  # weighted X
+    M = (wX.T) @ wX / n
+    _, v = np.linalg.eigh(M)
+    B_hat = v[:, -(L+1):-1]
+    if L >= p:
+        # randomly initialise remaining betas
+        B_hat = np.hstack((B_hat, RNG.normal(0, 1, (p, L - p))))
+    return B_hat
+
+
+def generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, spectral_init=False, RNG=default_rng()):
     """
     Generate a random dataset according to the mixed linear regression model.
     Parameters:
@@ -96,6 +119,7 @@ def generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, RNG=default_
         alpha: L x 1 = categorical distribution on components
         B_row_cov: L x L = covariance matrix of the rows of B
         sigma_sq: float = noise variance
+        spectral_init: bool = whether to use spectral initialisation
         RNG: numpy random number generator
     Returns:
         X: n x p = samples
@@ -105,7 +129,6 @@ def generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, RNG=default_
     """
     # generate rows of signal matrix B according to zero mean Gaussian with covariance B_row_cov
     B = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
-    B_hat_0 = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
     X = RNG.normal(0, np.sqrt(1 / n), (n, p))
     Theta = X @ B
     # generate class label latent variables from cat(alpha)
@@ -113,6 +136,10 @@ def generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, RNG=default_
     # generate Y by picking elements from Theta according to c
     Y = np.take_along_axis(Theta, c[:, None], axis=1)
     Y = Y + RNG.normal(0, sqrt(sigma_sq), n)[:, None]
+    if spectral_init:
+        B_hat_0 = spectral_initialisation(X, Y, L, RNG)
+    else:
+        B_hat_0 = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
     return X, Y, B, B_hat_0
 
 

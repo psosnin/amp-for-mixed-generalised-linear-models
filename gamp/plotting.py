@@ -56,7 +56,7 @@ def plot_corr(beta, beta_hat_list, mu_k_list, sigma_beta_sq, filename=None):
     plt.show()
 
 
-def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, filename=None):
+def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, spectral=False, filename=None):
     """
     Plot the mean squared error of the signal estimate vs. the number of iterations.
     Parameters:
@@ -65,12 +65,14 @@ def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, filename=None):
         M_k_list: list of state evolution means
         B_cov: signal covariance matrix
         alpha: mixture proportions
+        spectral: whether spectral initialisation was used
         filename: filename to save the plot
     """
     L = B.shape[1]
+    q = 1 if spectral else 2
     palette = sns.color_palette('Dark2', L)
     losses = np.array([mse_mixed(B, B_hat, B_cov) for B_hat in B_hat_list])
-    losses_se = np.array([[2] * L] + [state_evolution_mse_mixed(M_k, B_cov, True) for M_k in M_k_list])
+    losses_se = np.array([[q] * L] + [state_evolution_mse_mixed(M_k, B_cov, True) for M_k in M_k_list])
     f, axs = plt.subplots(L, 1, sharex=True, sharey=True, figsize=(5, 5))
     for i in range(L):
         axs[i].axhline(1, color=palette[i], linestyle='dotted')
@@ -79,7 +81,7 @@ def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, filename=None):
                     color=palette[i], label='state evolution prediction')
         axs[i].set_ylabel('Normalised mean squared error')
         axs[i].set_title(f"Mixture {i+1}, $\\alpha$={alpha[i]:.3f}, $\\sigma_\\beta^2$={B_cov[i, i]:.3f}")
-        axs[i].set_ylim(0, 2.3)
+        axs[i].set_ylim(0, 1.2 * q)
         axs[i].legend()
     plt.xlabel('Iteration No.')
     if filename:
