@@ -6,7 +6,7 @@ from numpy.linalg import inv
 
 from .gamp import GAMP
 
-RNG = default_rng(1)
+RNG = default_rng()
 
 
 def gk_expect_linear(Z_k_and_Y, Sigma_k, sigma_sq):
@@ -39,5 +39,6 @@ def run_linear_trial(p, n, sigma_sq, sigma_beta_sq, n_iters):
     beta = RNG.normal(0, sqrt(sigma_beta_sq), p)
     y = X @ beta + eps
     beta_hat_k = RNG.normal(0, sqrt(sigma_beta_sq), p)
-    beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect_linear)
+    beta_hat_list, mu_k_list = GAMP(
+        X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect_linear)
     return beta, beta_hat_list, mu_k_list

@@ -1,9 +1,9 @@
 import numpy as np
 from tqdm import tqdm
-from numpy.linalg import inv, pinv
+from numpy.linalg import inv, pinv, norm
 
 
-def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk):
+def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk, eps=1e-2):
     """
     Run matrix generalised approximate message passing to estimate B from X and Y.
     Parameters:
@@ -15,6 +15,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk):
         alpha: L x 1 = categorical distribution on components
         n_iters: int = max number of AMP iterations to perform
         gk_expect: function to compute E[Z | Zk, Ybar], depends on choice of GLM
+        eps: float = stopping criterion
     Returns:
         B_hat_list: list of estimates of B for each AMP iteration
         M_k_B_list: list of estimates of M_K_B for each AMP iteration
@@ -59,12 +60,19 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk):
         Sigma_k_plus_1 = update_Sigmak(B_hat_k_plus_1, B_row_cov, p, n)
 
         # prepare next iteration:
+        B_hat_list.append(B_hat_k_plus_1.copy())
+        M_k_B_list.append(M_B_k_plus_1)
+
+        # early stopping
+        if norm(B_hat_k - B_hat_k_plus_1) ** 2 / p < eps:
+            # print(f"Convergence criterion met, stopping at iteration {_}")
+            break
+
         B_hat_k = B_hat_k_plus_1
         Sigma_k = Sigma_k_plus_1
         R_hat_minus_1 = R_hat_k
         F_k = F_k_plus_1
-        B_hat_list.append(B_hat_k.copy())
-        M_k_B_list.append(M_B_k_plus_1)
+
     return B_hat_list, M_k_B_list
 
 

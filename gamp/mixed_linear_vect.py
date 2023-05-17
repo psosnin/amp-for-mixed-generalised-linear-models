@@ -40,7 +40,7 @@ def apply_gk_mixed_linear(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha
     return (E_Z_given_Zk_Ybar - E_Z_given_Zk) @ inv(cov_Z_given_Zk)
 
 
-def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters, RNG=None):
+def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters, RNG=None, return_data=False):
     """
     Generate a random mixed linear regression dataset and then perform GAMP.
     Parameters:
@@ -72,6 +72,7 @@ def run_MLR_trial(p, L, n, alpha, B_row_cov, sigma_sq, n_iters, RNG=None):
     # generate Y by picking elements from Theta according to c
     Y = np.take_along_axis(Theta, c[:, None], axis=1)
     Y = Y + RNG.normal(0, sqrt(sigma_sq), n)[:, None]
-
     B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, apply_gk_mixed_linear)
+    if return_data:
+        return B, B_hat_list, M_k_B_list, X, Y, B_hat_0
     return B, B_hat_list, M_k_B_list

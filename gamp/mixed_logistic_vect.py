@@ -135,7 +135,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None, return_data=False):
+def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None, return_data=False, eps=1e-3):
     """
     Generate a random mixed logistic regression dataset and then perform GAMP.
     Parameters:
@@ -173,7 +173,7 @@ def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None, retur
     u = RNG.uniform(0, 1, (n, 1))
     Y = np.array(sigmoid(Y) > u, dtype=int)
 
-    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, 0, alpha, n_iters, apply_gk_mixed_logistic)
+    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, 0, alpha, n_iters, apply_gk_mixed_logistic, eps)
     if return_data:
         return B, B_hat_list, M_k_B_list, X, Y, B_hat_0
     return B, B_hat_list, M_k_B_list

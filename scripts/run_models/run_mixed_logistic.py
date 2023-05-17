@@ -22,7 +22,7 @@ L = 3  # number of mixture components
 n = 3000  # number of samples
 sigma_beta_sq = 20 * n / p  # signal variance
 n_iters = 10   # number of AMP iterations
-n_trials = 5  # number of amp trials to perform
+n_trials = 1  # number of amp trials to perform
 
 alpha = RNG.uniform(0.3, 1, L)
 alpha = alpha / np.linalg.norm(alpha, 1)  # unequal mixing
@@ -48,6 +48,7 @@ for i in tqdm(range(n_trials)):
     mse[i, :len(B_hat_list), :] = np.array([B_loss(B, B_hat) for B_hat in B_hat_list])
     mse[i, len(B_hat_list):] = mse[i, len(B_hat_list) - 1]
     pred[i, :len(B_hat_list), :] = np.array([prediction_error_mixed(B, B_hat, n, RNG) for B_hat in B_hat_list])
+    pred[i, len(B_hat_list):] = pred[i, len(B_hat_list) - 1]
     mse_se[i, 1:len(B_hat_list), :] = np.array([state_evolution_mse_mixed(M_k, B_cov) for M_k in M_k_B_list])
     mse_se[i, len(B_hat_list):] = mse_se[i, len(B_hat_list) - 1]
 

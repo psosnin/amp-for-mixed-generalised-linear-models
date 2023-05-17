@@ -6,7 +6,7 @@ from scipy.stats import norm as normal
 
 from .gamp import GAMP
 
-RNG = default_rng(1)
+RNG = default_rng()
 
 
 def sigmoid(x):
@@ -20,7 +20,8 @@ def gk_expect_logistic(Z_k_and_Y, Sigma_k, sigma_sq):
     l = sqrt(np.pi / 8)
     P_Y_1_given_Z_k = normal.cdf(mu_1 / sqrt(l ** -2 + sigma_1_sq))
     const = l / sqrt(1 + l ** 2 * sigma_1_sq)
-    inner = mu_1 * normal.cdf(const * mu_1) + const * sigma_1_sq * normal.pdf(const * mu_1)
+    inner = mu_1 * normal.cdf(const * mu_1) + const * \
+        sigma_1_sq * normal.pdf(const * mu_1)
     if Z_k_and_Y[1] == 1:
         return inner / P_Y_1_given_Z_k
     elif Z_k_and_Y[1] == 0:
@@ -45,5 +46,6 @@ def run_logistic_trial(p, n, sigma_beta_sq, n_iters):
     u = RNG.uniform(0, 1, n)
     y = np.array(sigmoid(X @ beta) > u, dtype=int)
     beta_hat_k = RNG.normal(0, sqrt(sigma_beta_sq), p)
-    beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_k, sigma_beta_sq, 0, n_iters, gk_expect_logistic)
+    beta_hat_list, mu_k_list = GAMP(
+        X, y, beta_hat_k, sigma_beta_sq, 0, n_iters, gk_expect_logistic)
     return beta, beta_hat_list, mu_k_list

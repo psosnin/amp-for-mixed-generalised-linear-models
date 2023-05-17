@@ -28,7 +28,7 @@ def logistic_test(beta):
 p = 500  # dimension
 n = 5000  # number of samples
 delta = n / p
-sigma_beta_sq = 20 # signal variance
+sigma_beta_sq = 20  # signal variance
 n_iters = 5  # number of amp iterations
 n_trials = 1  # number of trials to run
 
