@@ -2,3 +2,8 @@ venv
 .mypy_cache
 __pycache__
 plots
+report
+.vscode
+scripts/em_vs_gamp
+scripts/vary_delta
+em
