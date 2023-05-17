@@ -3,9 +3,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 import context
-from gamp.relu import run_relu_trial, run_relu_threshold_trial
-from gamp.losses import beta_loss
-from gamp.state_evolution import state_evolution_mse
+from gamp.models.relu import run_relu_trial, run_relu_threshold_trial
+from gamp.helpers import beta_loss, state_evolution_mse
 
 # Set parameters ==============================
 sigma_sq = 0.1  # noise variance

@@ -6,7 +6,8 @@ from numpy.linalg import pinv, norm, inv
 from scipy.stats import norm as normal
 import matplotlib.pyplot as plt
 
-from .matrix_gamp import matrix_GAMP
+from ..fitting.matrix_gamp import matrix_GAMP
+from ..helpers import sigmoid
 
 
 def apply_gk_mixed_logistic(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha):
@@ -129,10 +130,6 @@ def compute_alpha_and_gamma_ji(cov_Zj_Zi_Zk, cov_Zj_given_Zi_Zk, Zk):
         gamma[:, j, :] = ((mu_j_ik_factor[:, 1:] @ Zk[:, :, None]) /
                           np.sqrt(l ** -2 + cov_Zj_given_Zi_Zk[j, :])[:, None])[:, :, 0]
     return alpha, gamma
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
 
 
 def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None, return_data=False, eps=1e-3):

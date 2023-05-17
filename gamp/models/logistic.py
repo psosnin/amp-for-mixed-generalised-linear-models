@@ -4,13 +4,10 @@ import numpy as np
 from numpy.random import default_rng
 from scipy.stats import norm as normal
 
-from .gamp import GAMP
+from ..fitting.gamp import GAMP
+from ..helpers import sigmoid
 
 RNG = default_rng()
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
 
 
 def gk_expect_logistic(Z_k_and_Y, Sigma_k, sigma_sq):

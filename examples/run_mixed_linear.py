@@ -8,9 +8,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 import context
-from gamp.mixed_linear_vect import run_MLR_trial
-from gamp.losses import B_loss
-from gamp.state_evolution import state_evolution_mse_mixed
+from gamp.models.mixed_linear_vect import run_MLR_trial
+from gamp.helpers import B_loss, state_evolution_mse_mixed
 from em.linear_em import EM
 
 seed = randint(0, 10000)

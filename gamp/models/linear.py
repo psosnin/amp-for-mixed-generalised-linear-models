@@ -4,7 +4,7 @@ import numpy as np
 from numpy.random import default_rng
 from numpy.linalg import inv
 
-from .gamp import GAMP
+from ..fitting.gamp import GAMP
 
 RNG = default_rng()
 

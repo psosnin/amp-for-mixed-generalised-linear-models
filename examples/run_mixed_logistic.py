@@ -7,9 +7,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 
 import context
-from gamp.mixed_logistic_vect import run_mixed_logistic_trial
-from gamp.losses import B_loss, prediction_error_mixed
-from gamp.state_evolution import state_evolution_mse_mixed
+from gamp.models.mixed_logistic_vect import run_mixed_logistic_trial
+from gamp.helpers import B_loss, prediction_error_mixed, state_evolution_mse_mixed
 
 seed = randint(0, 10000)
 # seed = 7416

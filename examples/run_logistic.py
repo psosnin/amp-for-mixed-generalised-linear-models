@@ -6,9 +6,8 @@ from numpy.linalg import norm
 from sklearn.linear_model import LogisticRegression
 
 import context
-from gamp.logistic import run_logistic_trial, sigmoid
-from gamp.losses import beta_loss, prediction_error
-from gamp.state_evolution import state_evolution_mse
+from gamp.models.logistic import run_logistic_trial, sigmoid
+from gamp.helpers import beta_loss, prediction_error, state_evolution_mse
 
 RNG = np.random.default_rng(1)
 

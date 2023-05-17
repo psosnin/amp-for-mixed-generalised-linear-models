@@ -1,8 +1,12 @@
 from math import sqrt
 
 import numpy as np
-from numpy.linalg import norm
-from .logistic import sigmoid
+from numpy.linalg import norm, pinv
+
+
+def sigmoid(x):
+    """ Sigmoid function """
+    return 1 / (1 + np.exp(-x))
 
 
 def MSE(X, y, B_hat):
@@ -89,20 +93,28 @@ def prediction_error_mixed(B, B_hat, n, RNG, scale=10, combined=False, alpha=Non
         u = RNG.uniform(0, 1, (scale*n, 1))
         Y = np.array(sigmoid(Y) > u, dtype=int).flatten()
 
-        Y_pred = np.array(np.sum(alpha * sigmoid(X @ B_hat), axis=1) > 0.5, dtype=int).flatten()
+        Y_pred = np.array(np.sum(alpha * sigmoid(X @ B_hat),
+                          axis=1) > 0.5, dtype=int).flatten()
         return (scale*n - np.sum(Y_pred == Y)) / (scale*n)
     return np.array([prediction_error(B[:, j], B_hat[:, j], n, RNG, scale) for j in range(B.shape[1])])
 
 
-def logistic_log_loss(beta, beta_hat, n, RNG, scale=10):
-    p = beta.size
-    X = RNG.normal(0, sqrt(1 / n), (scale*n, p))
-    # data
-    u = RNG.uniform(0, 1, scale*n)
-    y = np.array(sigmoid(X @ beta) > u, dtype=int).flatten()
-    y[y == 0] = -1
-    return (- 1 / (scale*n)) * np.sum(np.log(sigmoid(y[:, None] * X @ beta_hat)))
+def state_evolution_mse(mu_k, sigma_k_sq, sigma_beta_sq):
+    """ Prediction of the mean squared error from the state evolution, assuming a Gaussian prior. """
+    q = mu_k * sigma_beta_sq / (mu_k ** 2 * sigma_beta_sq + sigma_k_sq)
+    return sigma_beta_sq - q * mu_k * sigma_beta_sq
 
 
-def logistic_log_loss_mixed(B, B_hat, n, RNG, scale=10):
-    return np.array([logistic_log_loss(B[:, j], B_hat[:, j], n, RNG, scale) for j in range(B.shape[1])])
+def state_evolution_corr(mu_k, sigma_k_sq, sigma_beta_sq):
+    """ Prediction of the normalised correlation from the state evolution assuming a Gaussian prior. """
+    q = mu_k * sigma_beta_sq / (mu_k ** 2 * sigma_beta_sq + sigma_k_sq)
+    return q * mu_k
+
+
+def state_evolution_mse_mixed(M_k, Sigma_B):
+    L = M_k.shape[0]
+    Q = Sigma_B @ M_k.T @ pinv(M_k @ Sigma_B @ M_k.T + M_k.T)
+    se = []
+    for i in range(L):
+        se.append(Sigma_B[i, i] - Q[i, :] @ M_k @ Sigma_B[i, :])
+    return se
