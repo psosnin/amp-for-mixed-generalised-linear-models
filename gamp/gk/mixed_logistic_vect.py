@@ -1,16 +1,16 @@
 from math import sqrt
 
 import numpy as np
-from numpy.random import default_rng
 from numpy.linalg import pinv, norm, inv
 from scipy.stats import norm as normal
-import matplotlib.pyplot as plt
-
-from ..fitting.matrix_gamp import matrix_GAMP
-from ..helpers import sigmoid
 
 
-def apply_gk_mixed_logistic(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha):
+"""
+implement a vectorised version of the Bayes-optimal g_k* for the mixed logistic regression model
+"""
+
+
+def apply_gk(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alpha):
     """ Apply Bayesian-Optimal g_k* to each row of Theta_k """
     n, L = Theta_k.shape
     l = sqrt(np.pi / 8)
@@ -36,6 +36,9 @@ def apply_gk_mixed_logistic(Theta_k, Y, S_11, S_12, S_21, S_22, L, sigma_sq, alp
 
 
 def compute_E_Z_given_Zk_Y(Y, alpha, cov_Z_given_Zk, E_Z_given_Zk, P_c_given_Zk_Y, P_Y_given_Zk_c, alpha_ji, eta_jik):
+    """
+    Compute E[Z|Zk, Ybar] for the mixed logistic regression model.
+    """
     n = Y.size
     L = len(alpha)
     E_Z_given_Zk_Y = np.zeros((n, L))
@@ -57,8 +60,8 @@ def compute_E_Z_given_Zk_Y(Y, alpha, cov_Z_given_Zk, E_Z_given_Zk, P_c_given_Zk_
 
 def compute_cov_Zj_Zi_Zk(S_11, S_12, S_21, S_22):
     """
-        Compute the covariance matrix of p(Z_j, Z_i, Z^k) for each combination of j, i
-        Returns an L x L x (L + 2) x (L + 2 matrix), where the first two indices index j and i
+    Compute the covariance matrix of p(Z_j, Z_i, Z^k) for each combination of j, i
+    Returns an L x L x (L + 2) x (L + 2 matrix), where the first two indices index j and i
     """
     L = S_11.shape[0]
 
@@ -130,47 +133,3 @@ def compute_alpha_and_gamma_ji(cov_Zj_Zi_Zk, cov_Zj_given_Zi_Zk, Zk):
         gamma[:, j, :] = ((mu_j_ik_factor[:, 1:] @ Zk[:, :, None]) /
                           np.sqrt(l ** -2 + cov_Zj_given_Zi_Zk[j, :])[:, None])[:, :, 0]
     return alpha, gamma
-
-
-def run_mixed_logistic_trial(p, L, n, alpha, B_row_cov, n_iters, RNG=None, return_data=False, eps=1e-3):
-    """
-    Generate a random mixed logistic regression dataset and then perform GAMP.
-    Parameters:
-        p: int = number of dimensions
-        L: int = number of mixture components
-        n: int = number of samples
-        alpha: L x 1 = categorical distribution on components
-        B_row_cov: L x L = covariance matrix of the rows of B
-        n_iters: int = max number of AMP iterations to perform
-        RNG: numpy random number generator to use. If none is provided, use random seed
-        return_data: bool = whether to return X and Y
-    Returns:
-        B = true signal matrix
-        B_hat_list = list of B_hat estimates for each AMP iteration
-        M_k_B_list = list of state evolution estimates for each AMP iteration
-    """
-    if RNG is None:
-        RNG = default_rng()
-    # initialise B signal matrix
-    # rows of B are generated iid from joint Gaussian
-    B = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
-    B_hat_0 = RNG.multivariate_normal(np.zeros(L), B_row_cov, p)
-    # initial estimate of B is generated from the same distribution
-
-    # generate X iid Gaussian from N(0, 1/N)
-    X = RNG.normal(0, np.sqrt(1 / n), (n, p))
-    Theta = X @ B
-    # generate class label latent variables from Cat(alpha)
-    c = np.digitize(RNG.uniform(0, 1, n), np.cumsum(alpha))
-
-    # generate Y by picking elements from Theta according to c
-    Y = np.take_along_axis(Theta, c[:, None], axis=1)
-    # plt.hist(sigmoid(Y), bins=10)
-    # plt.show()
-    u = RNG.uniform(0, 1, (n, 1))
-    Y = np.array(sigmoid(Y) > u, dtype=int)
-
-    B_hat_list, M_k_B_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, 0, alpha, n_iters, apply_gk_mixed_logistic, eps)
-    if return_data:
-        return B, B_hat_list, M_k_B_list, X, Y, B_hat_0
-    return B, B_hat_list, M_k_B_list

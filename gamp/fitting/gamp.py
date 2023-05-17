@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect):
+def GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, apply_gk, eps=1e-3):
     """
     Run generalised approximate message passing to estimate beta from X and y.
     The model makes the following assumptions:
@@ -17,10 +17,11 @@ def GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect):
         sigma_beta_sq: float = prior variance of beta
         sigma_sq: float = noise variance
         n_iters: int = max number of AMP iterations to perform
-        gk_expect: function to compute E[Z | Zk, Ybar], depends on choice of GLM
+        apply_gk: function to compute the denoising gk for a specific GLM
+        eps: float = stopping criterion
     Returns:
-        beta_hat_list: list of estimates of B for each AMP iteration
-        mu_k_list: list of state evolution mean for each iteration
+        beta_hat_list: list of np.array = list of estimated signals
+        mu_k_list: list of np.array = list of estimated means
     """
     # get dimensions and validate Y
     n, p = X.shape
@@ -39,7 +40,7 @@ def GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect):
         # step 1: compute theta_k
         theta_k = X @ beta_hat_k - b_k * r_hat_k_minus_1
         # step 2: apply denoising function gk and check for nan
-        r_hat_k = apply_gk(theta_k, y, Sigma_k, sigma_sq, gk_expect)
+        r_hat_k = apply_gk(theta_k, y, Sigma_k, sigma_sq)
         if np.isnan(r_hat_k).any():
             print(f"nan in r_hat_k at iteration {_}, stopping.")
             break
@@ -56,6 +57,10 @@ def GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect):
         b_k_plus_1 = q / delta
         # update state evolution matrix
         Sigma_k_plus_1 = update_Sigmak(q, mu_k_plus_1, sigma_beta_sq, delta)
+        # check convergence criterion
+        if np.linalg.norm(beta_hat_k - beta_hat_k_plus_1) ** 2 / p < eps:
+            print(f"Convergence criterion met at iteration {_}")
+            break
         # prepare next iteration:
         beta_hat_k = beta_hat_k_plus_1
         Sigma_k = Sigma_k_plus_1
@@ -65,21 +70,10 @@ def GAMP(X, y, beta_hat_k, sigma_beta_sq, sigma_sq, n_iters, gk_expect):
         beta_hat_list.append(beta_hat_k)
         mu_k_list.append(mu_k_plus_1)
 
+    # if we terminated early, fill values of beta_hat_list and mu_k_list to the expected length
+    beta_hat_list += [beta_hat_list[-1]] * (n_iters + 1 - len(beta_hat_list))
+    mu_k_list += [mu_k_list[-1]] * (n_iters - len(mu_k_list))
     return beta_hat_list, mu_k_list
-
-
-def apply_gk(theta, y, Sigma_k, sigma_sq, gk_expect):
-    """ Apply Bayesian-Optimal g_k* to each entry in theta and y. """
-    Var_Z_given_Z_k = Sigma_k[0, 0] - Sigma_k[0, 1] ** 2 / Sigma_k[1, 1]
-    theta_and_y = np.vstack((theta, y))
-    return np.apply_along_axis(compute_gk_1d, 0, theta_and_y, Var_Z_given_Z_k, Sigma_k, sigma_sq, gk_expect)
-
-
-def compute_gk_1d(Z_k_and_Y, Var_Z_given_Z_k, Sigma_k, sigma_sq, gk_expect):
-    """ Compute the optial gk given Z_k and Y. """
-    E_Z_given_Z_k = Z_k_and_Y[0] * Sigma_k[0, 1] / Sigma_k[1, 1]
-    E_Z_given_Z_k_Y = gk_expect(Z_k_and_Y, Sigma_k, sigma_sq)
-    return (E_Z_given_Z_k_Y - E_Z_given_Z_k) / Var_Z_given_Z_k
 
 
 def compute_ck(theta_k, r_hat_k, Sigma_k, mu_k_plus_1):

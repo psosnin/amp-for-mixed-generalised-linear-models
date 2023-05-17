@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import pinv, norm
 
 
-def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk, eps=1e-2):
+def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk, eps=1e-3):
     """
     Run matrix generalised approximate message passing to estimate B from X and Y
     with a given initial estimate B_hat_k.
@@ -21,7 +21,7 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk, ep
         sigma: float = noise variance
         alpha: L x 1 = categorical distribution on components
         n_iters: int = max number of AMP iterations to perform
-        gk_expect: function to compute E[Z | Zk, Ybar], depends on choice of GLM
+        apply_gk: function to compute the denoising gk for a specific GLM
         eps: float = stopping criterion
     Returns:
         B_hat_list: list of estimates of B for each AMP iteration
@@ -75,6 +75,10 @@ def matrix_GAMP(X, Y, B_hat_k, B_row_cov, sigma_sq, alpha, n_iters, apply_gk, ep
         Sigma_k = Sigma_k_plus_1
         R_hat_minus_1 = R_hat_k
         F_k = F_k_plus_1
+
+    # if we terminated early, fill B_hat_list and M_k_B_list with the last estimate
+    B_hat_list += [B_hat_list[-1]] * (n_iters + 1 - len(B_hat_list))
+    M_k_B_list += [M_k_B_list[-1]] * (n_iters - len(M_k_B_list))
 
     return B_hat_list, M_k_B_list
 
