@@ -85,7 +85,7 @@ def compute_cov_Zj_given_Zi_Zk(cov_Zj_Zi_Zk):
     cov_Zj_given_Zi_Zk = np.zeros((L, L))
     for j in range(L):
         cov_Zj_given_Zi_Zk[j, :] = (
-            cov_Zj_Zi_Zk[j, :, 1, 1] -
+            cov_Zj_Zi_Zk[j, :, 0, 0] -
             (cov_Zj_Zi_Zk[j, :, 0, None, 1:] @
              (pinv(cov_Zj_Zi_Zk[j, :, 1:, 1:]) @ cov_Zj_Zi_Zk[j, :, 1:, 0, None]))[:, 0, 0]
         )

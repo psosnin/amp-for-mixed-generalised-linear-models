@@ -56,7 +56,7 @@ def compute_E_Zi_given_Y_Zk_c(i, Y, Zk, c, Sigma_k, alpha, mu_zzk, Sigma_zzk):
         [S_21[:, j, None], S_21[:, i, None], S_22]
     ])
     l = sqrt(np.pi / 8)
-    sigma_j_ik_sq = max(0, cov_Zj_Zi_Zk[1, 1] - cov_Zj_Zi_Zk[0, 1:] @ pinv(cov_Zj_Zi_Zk[1:, 1:]) @ cov_Zj_Zi_Zk[1:, 0])
+    sigma_j_ik_sq = cov_Zj_Zi_Zk[0, 0] - cov_Zj_Zi_Zk[0, 1:] @ pinv(cov_Zj_Zi_Zk[1:, 1:]) @ cov_Zj_Zi_Zk[1:, 0]
     mid = cov_Zj_Zi_Zk[0, 1:] @ pinv(cov_Zj_Zi_Zk[1:, 1:])
     alpha_j_i = mid[0] / sqrt(l ** -2 + sigma_j_ik_sq)
     gamma_j_i = mid[1:] @ Zk / sqrt(l ** -2 + sigma_j_ik_sq)
