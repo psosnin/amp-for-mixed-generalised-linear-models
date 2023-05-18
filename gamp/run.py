@@ -22,11 +22,14 @@ def run_trial(model, algorithm, p, n, sigma_sq, sigma_beta_sq, n_iters, RNG=None
         sigma_sq: float = noise variance
         sigma_beta_sq: float = signal variance
         n_iters: int = max number of iterations to perform
+        RNG: = np random number generator
     Returns:
         beta: np.array = true signal
         beta_hat_list: list of np.array = list of estimated signals
         mu_k_list: list of np.array = list of state evolution means
     """
+    if RNG is None:
+        RNG = np.random.default_rng()
     if model == 'linear' and algorithm == 'GAMP':
         X, y, beta, beta_hat_0 = generate_data_linear(p, n, sigma_sq, sigma_beta_sq, RNG)
         beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_0, sigma_beta_sq, sigma_sq, n_iters, linear.apply_gk)
@@ -41,7 +44,7 @@ def run_trial(model, algorithm, p, n, sigma_sq, sigma_beta_sq, n_iters, RNG=None
     return beta, beta_hat_list, mu_k_list
 
 
-def run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov, sigma_sq, n_iters, spectral=False):
+def run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov, sigma_sq, n_iters, spectral=False, RNG=None):
     """
     Run a single trial with the specified mixed glm and algorithm.
     Parameters:
@@ -55,11 +58,14 @@ def run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov, sigma_sq, n_ite
         sigma_sq: float = noise variance
         n_iters: int = max number of iterations to perform
         spectral: bool = whether to use spectral initialization
+        RNG: = np random number generator
     Returns:
         B: np.array = true signal
         B_hat_list: list of np.array = list of estimated signals
         M_k_list: list of np.array = list of state evolution mu_k
     """
+    if RNG is None:
+        RNG = np.random.default_rng()
     if model == 'linear' and algorithm == 'GAMP':
         X, Y, B, B_hat_0 = generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, spectral)
         B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_linear.apply_gk)
