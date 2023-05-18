@@ -11,7 +11,7 @@ Functions for running a single trial of GAMP or EM/AM.
 """
 
 
-def run_trial(model, algorithm, p, n, sigma_sq, sigma_beta_sq, n_iters):
+def run_trial(model, algorithm, p, n, sigma_sq, sigma_beta_sq, n_iters, RNG=None):
     """
     Run a single trial with the specified (non-mixed) glm and algorithm.
     Parameters:
@@ -28,13 +28,13 @@ def run_trial(model, algorithm, p, n, sigma_sq, sigma_beta_sq, n_iters):
         mu_k_list: list of np.array = list of state evolution means
     """
     if model == 'linear' and algorithm == 'GAMP':
-        X, y, beta, beta_hat_0 = generate_data_linear(p, n, sigma_sq, sigma_beta_sq)
+        X, y, beta, beta_hat_0 = generate_data_linear(p, n, sigma_sq, sigma_beta_sq, RNG)
         beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_0, sigma_beta_sq, sigma_sq, n_iters, linear.apply_gk)
     elif model == 'logistic' and algorithm == 'GAMP':
-        X, y, beta, beta_hat_0 = generate_data_logistic(p, n, 0, sigma_beta_sq)
+        X, y, beta, beta_hat_0 = generate_data_logistic(p, n, 0, sigma_beta_sq, RNG)
         beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_0, sigma_beta_sq, 0, n_iters, logistic.apply_gk)
     elif model == 'relu' and algorithm == 'GAMP':
-        X, y, beta, beta_hat_0 = generate_data_relu(p, n, sigma_sq, sigma_beta_sq)
+        X, y, beta, beta_hat_0 = generate_data_relu(p, n, sigma_sq, sigma_beta_sq, RNG)
         beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_0, sigma_beta_sq, sigma_sq, n_iters, relu.apply_gk)
     else:
         raise NotImplementedError

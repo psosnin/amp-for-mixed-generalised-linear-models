@@ -11,27 +11,23 @@ implement the Bayes-optimal g_k* for the rectified linear regression model
 
 def apply_gk(theta, y, Sigma_k, sigma_sq):
     """ Apply Bayesian-Optimal g_k* to each entry in theta and y. """
+
     Var_Z_given_Z_k = Sigma_k[0, 0] - Sigma_k[0, 1] ** 2 / Sigma_k[1, 1]
+    sigma_1_sq = Sigma_k[0, 0] - Sigma_k[0, 1] ** 2 / Sigma_k[1, 1]
+    sigma_2_sq = sigma_sq * sigma_1_sq / (sigma_sq + sigma_1_sq)
+
     theta_and_y = np.vstack((theta, y))
-    return np.apply_along_axis(compute_gk_1d, 0, theta_and_y, Var_Z_given_Z_k, Sigma_k, sigma_sq)
-
-
-def compute_gk_1d(Z_k_and_Y, Var_Z_given_Z_k, Sigma_k, sigma_sq):
-    """ Compute the optial gk given Z_k and Y. """
-    E_Z_given_Z_k = Z_k_and_Y[0] * Sigma_k[0, 1] / Sigma_k[1, 1]
-    E_Z_given_Z_k_Y = gk_expect(Z_k_and_Y, Sigma_k, sigma_sq)
+    E_Z_given_Z_k = theta * Sigma_k[0, 1] / Sigma_k[1, 1]
+    E_Z_given_Z_k_Y = np.apply_along_axis(gk_expect, 0, theta_and_y, Sigma_k, sigma_sq, sigma_1_sq, sigma_2_sq)
     return (E_Z_given_Z_k_Y - E_Z_given_Z_k) / Var_Z_given_Z_k
 
 
-def gk_expect(Z_k_and_Y, Sigma_k, sigma_sq):
+def gk_expect(Z_k_and_Y, Sigma_k, sigma_sq, sigma_1_sq, sigma_2_sq):
     """ Compute E[Z|Zk, Ybar] for the rectified linear model. """
     Z_k, Y = Z_k_and_Y
     mu_1 = Z_k * Sigma_k[0, 1] / Sigma_k[1, 1]
-    sigma_1_sq = Sigma_k[0, 0] - Sigma_k[0, 1] ** 2 / Sigma_k[1, 1]
-    sigma_1 = sqrt(sigma_1_sq)
-
     mu_2 = (Y * sigma_1_sq + mu_1 * sigma_sq) / (sigma_sq + sigma_1_sq)
-    sigma_2_sq = sigma_sq * sigma_1_sq / (sigma_sq + sigma_1_sq)
+    sigma_1 = sqrt(sigma_1_sq)
     sigma_2 = sqrt(sigma_2_sq)
 
     P_omega_0_given_Z_k_Y = compute_P_omega_given_Z_k_Y(0, Z_k, Y, sigma_sq, mu_1, sigma_1_sq, mu_2, sigma_2_sq)

@@ -22,13 +22,13 @@ def plot_mse(beta, beta_hat_list, mu_k_list, sigma_beta_sq, filename=None):
     losses = np.array([mse(beta, beta_hat, sigma_beta_sq) for beta_hat in beta_hat_list])
     losses_se = np.array([2] + [state_evolution_mse(mu, mu, sigma_beta_sq, True) for mu in mu_k_list])
     plt.figure(figsize=(5, 5))
-    plt.plot(range(len(losses)), losses, color='blue', label='amp')
-    plt.plot(range(len(losses_se)), losses_se, color='red', label='state evolution prediction')
+    plt.plot(range(len(losses)), losses, label='amp')
+    plt.plot(range(len(losses_se)), losses_se, label='state evolution prediction')
     plt.xlabel('Iteration No.')
     plt.ylabel('Normalised mean squared error')
     plt.legend()
     if filename:
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=300)
     plt.show()
 
 
@@ -45,18 +45,18 @@ def plot_corr(beta, beta_hat_list, mu_k_list, sigma_beta_sq, filename=None):
     losses = np.array([norm_sq_corr(beta, beta_hat) for beta_hat in beta_hat_list])
     losses_se = np.array([0] + [state_evolution_corr(mu, mu, sigma_beta_sq) for mu in mu_k_list])
     plt.figure(figsize=(5, 5))
-    plt.plot(range(len(losses)), losses, color='blue', label='amp')
-    plt.plot(range(len(losses_se)), losses_se, color='red', label='state evolution prediction')
+    plt.plot(range(len(losses)), losses, label='amp')
+    plt.plot(range(len(losses_se)), losses_se, label='state evolution prediction')
     plt.xlabel('Iteration No.')
     plt.ylabel('Normalised squared correlation')
     plt.ylim(0, 1)
     plt.legend()
     if filename:
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=300)
     plt.show()
 
 
-def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, spectral=False, filename=None):
+def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, spectral=False, permute=False, filename=None):
     """
     Plot the mean squared error of the signal estimate vs. the number of iterations.
     Parameters:
@@ -71,7 +71,7 @@ def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, spectral=False, filena
     L = B.shape[1]
     q = 1 if spectral else 2
     palette = sns.color_palette('Dark2', L)
-    losses = np.array([mse_mixed(B, B_hat, B_cov) for B_hat in B_hat_list])
+    losses = np.array([mse_mixed(B, B_hat, B_cov, permute) for B_hat in B_hat_list])
     losses_se = np.array([[q] * L] + [state_evolution_mse_mixed(M_k, B_cov, True) for M_k in M_k_list])
     f, axs = plt.subplots(L, 1, sharex=True, sharey=True, figsize=(5, 5))
     for i in range(L):
@@ -85,5 +85,5 @@ def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, spectral=False, filena
         axs[i].legend()
     plt.xlabel('Iteration No.')
     if filename:
-        plt.savefig(filename)
+        plt.savefig(filename, dpi=300)
     plt.show()
