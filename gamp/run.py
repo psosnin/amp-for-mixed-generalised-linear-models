@@ -4,6 +4,7 @@ from .fitting.matrix_gamp import matrix_GAMP
 from .gk import linear, logistic, relu
 from .gk import mixed_linear_vect as mixed_linear
 from .gk import mixed_logistic_vect as mixed_logistic
+from .gk import mixed_relu
 
 
 """
@@ -67,11 +68,14 @@ def run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov, sigma_sq, n_ite
     if RNG is None:
         RNG = np.random.default_rng()
     if model == 'linear' and algorithm == 'GAMP':
-        X, Y, B, B_hat_0 = generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, spectral)
+        X, Y, B, B_hat_0 = generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, spectral, RNG)
         B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_linear.apply_gk)
     elif model == 'logistic' and algorithm == 'GAMP':
-        X, Y, B, B_hat_0 = generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, sigma_sq)
+        X, Y, B, B_hat_0 = generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, sigma_sq, RNG)
         B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_logistic.apply_gk)
+    elif model == 'relu' and algorithm == 'GAMP':
+        X, Y, B, B_hat_0 = generate_data_mixed_relu(p, L, n, alpha, B_row_cov, sigma_sq, RNG)
+        B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_relu.apply_gk)
     else:
         raise NotImplementedError
     return B, B_hat_list, M_k_list

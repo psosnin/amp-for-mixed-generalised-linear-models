@@ -24,6 +24,7 @@ def plot_mse(beta, beta_hat_list, mu_k_list, sigma_beta_sq, filename=None):
     plt.figure(figsize=(5, 5))
     plt.plot(range(len(losses)), losses, label='amp')
     plt.plot(range(len(losses_se)), losses_se, label='state evolution prediction')
+    plt.ylim(0, 2.3)
     plt.xlabel('Iteration No.')
     plt.ylabel('Normalised mean squared error')
     plt.legend()
