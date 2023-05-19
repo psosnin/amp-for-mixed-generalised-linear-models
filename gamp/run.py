@@ -4,7 +4,7 @@ from .fitting.matrix_gamp import matrix_GAMP
 from .gk import linear, logistic, relu
 from .gk import mixed_linear_vect as mixed_linear
 from .gk import mixed_logistic_vect as mixed_logistic
-from .gk import mixed_relu
+from .gk import mixed_relu_vect as mixed_relu
 
 
 """

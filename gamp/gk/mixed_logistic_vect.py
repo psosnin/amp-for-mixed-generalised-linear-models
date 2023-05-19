@@ -6,7 +6,8 @@ from scipy.stats import norm as normal
 
 
 """
-implement a vectorised version of the Bayes-optimal g_k* for the mixed logistic regression model
+implement a vectorised version of the Bayes-optimal g_k* for the mixed logistic regression model.
+Runs much faster than the original version but is less readable.
 """
 
 

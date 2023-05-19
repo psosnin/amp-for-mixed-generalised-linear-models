@@ -4,7 +4,8 @@ from scipy.stats import multivariate_normal
 
 
 """
-implement a vectorised version of the Bayes-optimal g_k* for the mixed linear regression model
+implement a vectorised version of the Bayes-optimal g_k* for the mixed linear regression model.
+Runs much faster than the original version but is less readable.
 """
 
 
