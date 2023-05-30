@@ -2,7 +2,4 @@ numpy
 scipy
 matplotlib
 seaborn
-jupyter
 tqdm
-scikit-learn
-jax[cpu]

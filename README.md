@@ -42,3 +42,17 @@ To get started, follow these steps:
    ```
 
 2. Run the example scripts in the `examples/` directory to see how to use the AMP implementation.
+
+## References and Acknowledgements
+
+This project was undertaken as a research project for Part IIb of the Engineering Tripos, University of Cambridge. I would like to express gratitude to Professor Ramji Venkataramanan for his invaluable supervision and guidance throughout the project.
+
+The generalised AMP algorithm and algorithms for mixed GLMs are based on the following papers:
+
+[1] Feng, Oliver Y., Ramji Venkataramanan, Cynthia Rush, and Richard J. Samworth.
+"A unifying tutorial on approximate message passing."
+[Foundations and Trends in Machine Learning 15, no. 4 (2022): 335-536](https://www.nowpublishers.com/article/Details/MAL-092)
+
+[2] Tan, N., & Venkataramanan, R. (2023).
+"Mixed Regression via Approximate Message Passing."
+[arXiv preprint arXiv:2304.02229](https://arxiv.org/abs/2304.02229)
