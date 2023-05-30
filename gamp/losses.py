@@ -114,3 +114,37 @@ def prediction_error_mixed(B, B_hat, n, RNG, scale=10, combined=False, alpha=Non
 
     Y_pred = np.array(np.sum(alpha * sigmoid(X @ B_hat), axis=1) > 0.5, dtype=int).flatten()
     return (scale*n - np.sum(Y_pred == Y)) / (scale*n)
+
+
+def state_evolution_corr_mixed(M_k, Sigma_B):
+    """
+    State evolution prediction of the normalised correlation between the true signal and the estimated signal.
+    """
+    L = M_k.shape[0]
+    Q = Sigma_B @ M_k.T @ pinv(M_k @ Sigma_B @ M_k.T + M_k.T)
+    se = []
+    for i in range(L):
+        se.append(Q[i, :] @ M_k @ Sigma_B[i, :] / Sigma_B[i, i])
+    return se
+
+
+def norm_sq_corr_mixed(B_hat, B, permute=False):
+    """
+    Find the normalised squared correlation between the true regression slopes and their estimates.
+    Parameters:
+        B_hat: p x L = estimate of signal matrix
+        B: p x L = true signal matrix
+    Returns:
+        corr: normalised squared correlation between estimated signal and true signal
+    """
+    if permute:
+        p1 = [norm_sq_corr(B[:, j], B_hat[:, j]) for j in range(B.shape[1])]
+        p2 = [norm_sq_corr(B[:, j], B_hat[:, -j-1]) for j in range(B.shape[1])]
+        print(p1)
+        print(p2)
+        if np.sum(p2) > np.sum(p1):
+            return p2
+        else:
+            return p1
+
+    return [norm_sq_corr(B[:, j], B_hat[:, j]) for j in range(B.shape[1])]
