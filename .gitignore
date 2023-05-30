@@ -4,6 +4,9 @@ __pycache__
 plots
 report
 .vscode
+plotting
+report_plots
+archive
 scripts/em_vs_gamp
 scripts/vary_delta
 em

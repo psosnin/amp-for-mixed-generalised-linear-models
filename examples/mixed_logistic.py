@@ -7,7 +7,6 @@ from gamp.plotting import plot_mse_mixed
 
 # Set parameters ==============================
 model = 'logistic'
-algorithm = 'GAMP'
 p = 500  # dimension
 L = 2  # number of mixtures
 n = 5000  # number of samples
@@ -20,5 +19,5 @@ n_iters = 8  # number of amp iterations
 print('alpha: \n', alpha)
 print('B_row_cov: \n', B_row_cov)
 
-B, B_hat_list, M_k_list = run_trial_mixed(model, algorithm, p, L, n, alpha, B_row_cov, sigma_sq, n_iters)
+B, B_hat_list, M_k_list = run_trial_mixed(model, p, L, n, alpha, B_row_cov, sigma_sq, n_iters)
 plot_mse_mixed(B, B_hat_list, M_k_list, B_row_cov, alpha)
