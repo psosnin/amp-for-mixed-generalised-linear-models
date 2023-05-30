@@ -3,7 +3,7 @@ import numpy as np
 import context
 from gamp.run import run_trial_mixed
 from gamp.generate_data import generate_alpha, generate_B_row_cov
-from gamp.plotting import plot_mse_mixed
+from gamp.plotting import plot_mse_mixed, plot_corr_mixed
 
 # Set parameters ==============================
 model = 'linear'
@@ -21,3 +21,4 @@ print('B_row_cov: \n', B_row_cov)
 
 B, B_hat_list, M_k_list = run_trial_mixed(model, p, L, n, alpha, B_row_cov, sigma_sq, n_iters)
 plot_mse_mixed(B, B_hat_list, M_k_list, B_row_cov, alpha)
+plot_corr_mixed(B, B_hat_list, M_k_list, B_row_cov, alpha)

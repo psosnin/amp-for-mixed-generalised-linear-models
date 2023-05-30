@@ -42,7 +42,7 @@ def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
 
-def generate_data_logistic(p, n, sigma_sq, sigma_beta_sq, RNG=default_rng()):
+def generate_data_logistic(p, n, sigma_beta_sq, RNG=default_rng()):
     """
     Generate a random dataset according to the logistic regression model.
     Parameters:
@@ -117,7 +117,7 @@ def generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, RNG=default_
     return X, Y, B, B_hat_0
 
 
-def generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, sigma_sq, RNG=default_rng()):
+def generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, RNG=default_rng()):
     """
     Generate a random dataset according to the mixed logistic regression model.
     Parameters:
@@ -126,7 +126,6 @@ def generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, sigma_sq, RNG=defaul
         n: int = number of samples
         alpha: L x 1 = categorical distribution on components
         B_row_cov: L x L = covariance matrix of the rows of B
-        sigma_sq: float = noise variance
         RNG: numpy random number generator
     Returns:
         X: n x p = samples

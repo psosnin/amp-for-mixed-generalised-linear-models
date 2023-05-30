@@ -34,7 +34,7 @@ def run_trial(model, p, n, sigma_sq, sigma_beta_sq, n_iters, RNG=None):
         X, y, beta, beta_hat_0 = generate_data_linear(p, n, sigma_sq, sigma_beta_sq, RNG)
         beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_0, sigma_beta_sq, sigma_sq, n_iters, linear.apply_gk)
     elif model == 'logistic':
-        X, y, beta, beta_hat_0 = generate_data_logistic(p, n, 0, sigma_beta_sq, RNG)
+        X, y, beta, beta_hat_0 = generate_data_logistic(p, n, sigma_beta_sq, RNG)
         beta_hat_list, mu_k_list = GAMP(X, y, beta_hat_0, sigma_beta_sq, 0, n_iters, logistic.apply_gk)
     elif model == 'relu':
         X, y, beta, beta_hat_0 = generate_data_relu(p, n, sigma_sq, sigma_beta_sq, RNG)
@@ -68,8 +68,8 @@ def run_trial_mixed(model, p, L, n, alpha, B_row_cov, sigma_sq, n_iters, RNG=Non
         X, Y, B, B_hat_0 = generate_data_mixed_linear(p, L, n, alpha, B_row_cov, sigma_sq, RNG)
         B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_linear.apply_gk)
     elif model == 'logistic':
-        X, Y, B, B_hat_0 = generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, sigma_sq, RNG)
-        B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_logistic.apply_gk)
+        X, Y, B, B_hat_0 = generate_data_mixed_logistic(p, L, n, alpha, B_row_cov, RNG)
+        B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, 0, alpha, n_iters, mixed_logistic.apply_gk)
     elif model == 'relu':
         X, Y, B, B_hat_0 = generate_data_mixed_relu(p, L, n, alpha, B_row_cov, sigma_sq, RNG)
         B_hat_list, M_k_list = matrix_GAMP(X, Y, B_hat_0, B_row_cov, sigma_sq, alpha, n_iters, mixed_relu.apply_gk)

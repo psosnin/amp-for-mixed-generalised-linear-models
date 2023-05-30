@@ -5,6 +5,7 @@ import seaborn as sns
 from .losses import mse, state_evolution_mse
 from .losses import norm_sq_corr, state_evolution_corr
 from .losses import mse_mixed, state_evolution_mse_mixed
+from .losses import norm_sq_corr_mixed, state_evolution_corr_mixed
 
 sns.set_theme(context='paper', palette='Dark2', style='ticks')
 
@@ -81,6 +82,39 @@ def plot_mse_mixed(B, B_hat_list, M_k_list, B_cov, alpha, permute=False, filenam
         axs[i].set_ylabel('Normalised mean squared error')
         axs[i].set_title(f"Mixture {i+1}, $\\alpha$={alpha[i]:.3f}, $\\sigma_\\beta^2$={B_cov[i, i]:.3f}")
         axs[i].set_ylim(0, 2.4)
+        axs[i].legend()
+    plt.xlabel('Iteration No.')
+    if filename:
+        plt.savefig(filename, dpi=300)
+    plt.show()
+
+
+def plot_corr_mixed(B, B_hat_list, M_k_list, B_cov, alpha, filename=None):
+    """
+    Plot the mean squared error of the signal estimate vs. the number of iterations.
+    Parameters:
+        B: true signal matrix
+        B_hat_list: list of signal estimates
+        M_k_list: list of state evolution means
+        B_cov: signal covariance matrix
+        alpha: mixture proportions
+        filename: filename to save the plot
+    """
+    L = B.shape[1]
+    palette = sns.color_palette('Dark2', L)
+    losses = np.array([norm_sq_corr_mixed(B, B_hat) for B_hat in B_hat_list])
+    if M_k_list:
+        losses_se = np.array([[0] * L] + [state_evolution_corr_mixed(M_k, B_cov) for M_k in M_k_list])
+    f, axs = plt.subplots(L, 1, sharex=True, sharey=True, figsize=(5, 5))
+    for i in range(L):
+        axs[i].axhline(1, color=palette[i], linestyle='dotted')
+        axs[i].plot(range(len(losses)), losses[:, i], color=palette[i], label='amp')
+        if M_k_list:
+            axs[i].plot(range(len(losses_se)), losses_se[:, i], linestyle='dashed',
+                        color=palette[i], label='state evolution prediction')
+        axs[i].set_ylabel('Normalised squared correlation')
+        axs[i].set_title(f"Mixture {i+1}, $\\alpha$={alpha[i]:.3f}, $\\sigma_\\beta^2$={B_cov[i, i]:.3f}")
+        axs[i].set_ylim(0, 1.1)
         axs[i].legend()
     plt.xlabel('Iteration No.')
     if filename:
