@@ -2,16 +2,26 @@
 
 This repository contains code implementing and testing Approximate Message Passing (AMP) algorithms for Generalized Linear Models (GLMs).
 
+## Contributions
+
+This project extends previous work on AMP algorithms for mixed GLMs [2] to four new generalised linear models:
+
+1. Logistic Regression
+2. Mixed Logistic Regression
+3. Rectified Linear Regression
+4. Mixed Rectified Linear Regression
+
+Derivations and evaluation of these algorithms can be found in the thesis [here](Thesis.pdf).
+
 ## Overview
 
 The code in this repository provides an implementation of the AMP algorithm for fitting GLMs. AMP is implemented for the following models:
 
-- Linear Regression
-- Mixed Linear Regression
-- Logistic Regression
-- Mixed Logistic Regression
-- Rectified Linear Regression
-- Mixed Rectified Linear Regression
+- Linear Regression + Mixed Linear Regression
+- Logistic Regression + Mixed Logistic Regression
+- Rectified Linear Regression + Mixed Rectified Linear Regression
+
+A detailed explanation of these models and the algorithms used can be found [here](Thesis.pdf).
 
 The repository is organized as follows:
 
@@ -19,7 +29,7 @@ The repository is organized as follows:
 
 - `gamp/matrix_gamp.py`: This file contains the source code for the implementation of the AMP algorithm for mixed GLMs.
 
-- `gamp/gk`: This directory contains code the denoising functions gk used in the AMP algorithm for each of the GLMs.
+- `gamp/gk`: This directory contains code for the denoising functions gk used in the AMP algorithm for each of the GLMs.
 
 - `gamp/generate_data.py`: Contains functions for generating data for each of the GLMs.
 
@@ -41,13 +51,13 @@ To get started, follow these steps:
    pip install -r requirements.txt
    ```
 
-2. Run the example scripts in the `examples/` directory to see how to use the AMP implementation.
+2. Run the example scripts in the `examples/` directory to see how to use the AMP implementation for each of the GLMs.
 
 ## References and Acknowledgements
 
-This project was undertaken as a research project for Part IIb of the Engineering Tripos, University of Cambridge. I would like to express gratitude to Professor Ramji Venkataramanan for his invaluable supervision and guidance throughout the project.
+This project was undertaken as a research project for Part IIb of the Engineering Tripos, University of Cambridge. I would like to express gratitude to Professor Ramji Venkataramanan for his invaluable supervision and guidance throughout the project. 
 
-The generalised AMP algorithm and algorithms for mixed GLMs are based on the following papers:
+The AMP algorithm for generalised linear models is based on [1]. The AMP algorithm for mixed generalised linear models and for mixed linear regression is based on [2].
 
 [1] Feng, Oliver Y., Ramji Venkataramanan, Cynthia Rush, and Richard J. Samworth.
 "A unifying tutorial on approximate message passing."
